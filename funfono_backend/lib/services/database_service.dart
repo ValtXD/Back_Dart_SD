@@ -69,6 +69,19 @@ class DatabaseService {
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
     ''');
+
+    await _connection.execute('''
+      CREATE TABLE IF NOT EXISTS speech_attempts (
+        id SERIAL PRIMARY KEY,
+        user_id UUID NOT NULL,
+        frase TEXT NOT NULL,
+        acertou BOOLEAN NOT NULL,
+        erros TEXT,
+        dicas TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    ''');
+    
   }
 
   /// Getter da conexão. Lança erro se ainda não foi inicializado.
