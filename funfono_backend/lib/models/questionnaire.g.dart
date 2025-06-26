@@ -8,56 +8,55 @@ part of 'questionnaire.dart';
 
 Questionnaire _$QuestionnaireFromJson(Map<String, dynamic> json) =>
     Questionnaire(
-      userId: json['userId'] as String?,
-      age: (json['age'] as num).toInt(),
-      gender: json['gender'] as String,
-      respondentType: json['respondentType'] as String,
-      speechDiagnoses: (json['speechDiagnoses'] as List<dynamic>)
-          .map((e) => e as String)
+      userId: json['user_id'] as String,
+      age: (json['age'] as num?)?.toInt(),
+      gender: json['gender'] as String?,
+      respondentType: json['respondent_type'] as String?,
+      speechDiagnoses: (json['speech_diagnosis'] as List<dynamic>?)
+          ?.map((e) => e as String)
           .toList(),
-      pronunciationDifficulties:
-          (json['pronunciationDifficulties'] as List<dynamic>)
-              .map((e) => e as String)
-              .toList(),
-      speechTherapyHistory: json['speechTherapyHistory'] as String,
-      favoriteFoods: (json['favoriteFoods'] as List<dynamic>)
-          .map((e) => e as String)
+      difficultSounds: (json['difficult_sounds'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
+      speechTherapyHistory: json['speech_therapy_history'] as String?,
+      favoriteFoods: (json['favorite_foods'] as List<dynamic>?)
+          ?.map((e) => e as String)
           .toList(),
       hobbies:
-          (json['hobbies'] as List<dynamic>).map((e) => e as String).toList(),
-      movieGenres: (json['movieGenres'] as List<dynamic>)
-          .map((e) => e as String)
+          (json['hobbies'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      movieGenres: (json['preferred_movie_genres'] as List<dynamic>?)
+          ?.map((e) => e as String)
           .toList(),
-      occupation: json['occupation'] as String,
-      musicTypes: (json['musicTypes'] as List<dynamic>)
-          .map((e) => e as String)
+      occupation: json['occupation'] as String?,
+      musicTypes: (json['music_preferences'] as List<dynamic>?)
+          ?.map((e) => e as String)
           .toList(),
-      communicationPeople: (json['communicationPeople'] as List<dynamic>)
-          .map((e) => e as String)
+      communicationPeople: (json['daily_interactions'] as List<dynamic>?)
+          ?.map((e) => e as String)
           .toList(),
-      communicationPreference: json['communicationPreference'] as String,
-      appExpectations: (json['appExpectations'] as List<dynamic>)
-          .map((e) => e as String)
+      communicationPreference: json['preferred_communication'] as String?,
+      appExpectations: (json['improvement_goals'] as List<dynamic>?)
+          ?.map((e) => e as String)
           .toList(),
-      practiceFrequency: json['practiceFrequency'] as String,
+      practiceFrequency: json['practice_frequency'] as String?,
     );
 
 Map<String, dynamic> _$QuestionnaireToJson(Questionnaire instance) =>
     <String, dynamic>{
-      'userId': instance.userId,
+      'user_id': instance.userId,
       'age': instance.age,
       'gender': instance.gender,
-      'respondentType': instance.respondentType,
-      'speechDiagnoses': instance.speechDiagnoses,
-      'pronunciationDifficulties': instance.pronunciationDifficulties,
-      'speechTherapyHistory': instance.speechTherapyHistory,
-      'favoriteFoods': instance.favoriteFoods,
+      'respondent_type': instance.respondentType,
+      'speech_diagnosis': instance.speechDiagnoses,
+      'difficult_sounds': instance.difficultSounds,
+      'speech_therapy_history': instance.speechTherapyHistory,
+      'favorite_foods': instance.favoriteFoods,
       'hobbies': instance.hobbies,
-      'movieGenres': instance.movieGenres,
+      'preferred_movie_genres': instance.movieGenres,
       'occupation': instance.occupation,
-      'musicTypes': instance.musicTypes,
-      'communicationPeople': instance.communicationPeople,
-      'communicationPreference': instance.communicationPreference,
-      'appExpectations': instance.appExpectations,
-      'practiceFrequency': instance.practiceFrequency,
+      'music_preferences': instance.musicTypes,
+      'daily_interactions': instance.communicationPeople,
+      'preferred_communication': instance.communicationPreference,
+      'improvement_goals': instance.appExpectations,
+      'practice_frequency': instance.practiceFrequency,
     };
