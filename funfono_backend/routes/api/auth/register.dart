@@ -1,7 +1,7 @@
 import 'package:dart_frog/dart_frog.dart';
 import 'package:dotenv/dotenv.dart';
 import '../../../lib/repositories/auth_repository.dart';
-import '../../../lib/services/database_service.dart';
+import 'package:funfono_backend/services/database_service.dart'; // <-- Certifique-se desta importação
 import 'dart:io';
 
 Future<Response> onRequest(RequestContext context) async {
