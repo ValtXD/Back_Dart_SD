@@ -30,7 +30,7 @@ Apenas responda o JSON. Nada antes ou depois.
 ''';
 
     final geminiResponse = await http.post(
-      Uri.parse("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyClP7PDzQR6AYg1hH7RZoNiZ-reoiQrNrs"),
+      Uri.parse("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyClP7PDzQR6AYg1hH7RZoNiZ-reoiQrNrs"),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         "contents": [
