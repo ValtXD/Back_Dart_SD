@@ -30,7 +30,6 @@ Future<Response> onRequest(RequestContext context) async {
     final fraseOriginal = data['frase']?.toString();
     final falaUsuarioAudioBase64 = data['fala_usuario_audio_base64']?.toString();
 
-
     if (userId == null || fraseOriginal == null || falaUsuarioAudioBase64 == null) {
       return Response.json(
         statusCode: 400,
@@ -47,31 +46,27 @@ Future<Response> onRequest(RequestContext context) async {
       print('Exceção ao chamar serviço AssemblyAI: $e');
     }
 
-    // REMOVIDA: A comparação direta 'final acertou = normalize(fraseOriginal) == normalize(transcricaoAssemblyAI ?? '');'
-    // Agora o Gemini fará a avaliação de acerto/erro
-
-
     String? mensagemGemini;
     bool acertouPeloGemini = false;
 
-    // Prompt atualizado para pedir JSON com acerto/erro e feedback
     final prompt = '''
 Você é um fonoaudiólogo virtual.
 O usuário tentou falar a frase:
 "$fraseOriginal"
 Mas o que um sistema de transcrição de alta precisão detectou foi:
-"${transcricaoAssemblyAI?.isEmpty ?? true ? 'Não foi possível transcrever com clareza suficiente. Tente falar mais perto do microfone.' : transcricaoAssemblyAI}"
+"${transcricaoAssemblyAI?.isEmpty ?? true ? 'Não foi possível transcrever com clareza suficiente. Tente falar mais perto do microfone.'
+: transcricaoAssemblyAI}"
 
 Por favor, analise a transcrição em relação à frase original.
 Retorne um JSON com duas chaves:
 1. "correto": um booleano (true ou false) indicando se a pronúncia foi considerada correta.
-2. "feedback": uma string com uma mensagem. Se correto, uma mensagem de parabéns. Se incorreto, uma dica de pronúncia curta e prática focando em articulação e fluência para a frase.
+2. "feedback": uma string com uma mensagem. Se correto, uma mensagem de parabéns.
+Se incorreto, uma dica de pronúncia curta e prática focando em articulação e fluência para a frase.
 Exemplo de retorno JSON:
 {"correto": true, "feedback": "Parabéns! Pronunciou a frase corretamente."}
 ou
 {"correto": false, "feedback": "Para melhorar, fale mais devagar e articule cada palavra."}
 ''';
-
     final response = await http.post(
       Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyClP7PDzQR6AYg1hH7RZoNiZ-reoiQrNrs'),
       headers: {'Content-Type': 'application/json'},
@@ -92,7 +87,6 @@ ou
         final geminiText = geminiData['candidates']?[0]?['content']?['parts']?[0]?['text'];
 
         if (geminiText != null && geminiText.isNotEmpty) {
-          // Tenta extrair o JSON puro da resposta do Gemini
           final jsonStart = geminiText.indexOf('{');
           final jsonEnd = geminiText.lastIndexOf('}');
           if (jsonStart != -1 && jsonEnd != -1 && jsonStart < jsonEnd) {
@@ -121,20 +115,21 @@ ou
     // Salvar resultado da tentativa no banco
     await db.query('''
       INSERT INTO speech_attempts (
-        user_id, frase, acertou, erros, dicas
+        user_id, frase, acertou, erros, dicas, transcricao_usuario 
       ) VALUES (
-        @userId, @frase, @acertou, @erros, @dicas
+        @userId, @frase, @acertou, @erros, @dicas, @transcricaoUsuario 
       )
     ''', substitutionValues: {
       'userId': userId,
       'frase': fraseOriginal,
       'acertou': acertouPeloGemini,
-      'erros': acertouPeloGemini ? null : mensagemGemini, // Salva o feedback se incorreto
+      'erros': acertouPeloGemini ? null : mensagemGemini,
       'dicas': acertouPeloGemini ? null : mensagemGemini,
+      'transcricaoUsuario': transcricaoAssemblyAI, // SALVANDO A TRANSCRIÇÃO
     });
     return Response.json(body: {
       'acertou': acertouPeloGemini,
-      'avaliacao': mensagemGemini, // Envia o feedback do Gemini diretamente para o frontend
+      'avaliacao': mensagemGemini,
       'transcricao_assemblyai': transcricaoAssemblyAI,
     });
   } catch (e, stack) {

@@ -78,6 +78,7 @@ class DatabaseService {
         acertou BOOLEAN NOT NULL,
         erros TEXT,
         dicas TEXT,
+        transcricao_usuario TEXT,
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
     ''');
