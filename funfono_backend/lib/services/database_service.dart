@@ -82,7 +82,18 @@ class DatabaseService {
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
     ''');
-    
+
+    // Tabela de lembretes (reminders) -- NOVO
+    await _connection.execute('''
+      CREATE TABLE IF NOT EXISTS reminders (
+        id SERIAL PRIMARY KEY,
+        user_id UUID NOT NULL,
+        title TEXT NOT NULL,
+        day_of_week INTEGER NOT NULL, -- 1=Segunda, 7=Domingo
+        time TEXT NOT NULL,          -- Formato HH:MM
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    ''');
   }
 
   /// Getter da conexão. Lança erro se ainda não foi inicializado.
