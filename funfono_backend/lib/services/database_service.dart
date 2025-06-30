@@ -83,7 +83,7 @@ class DatabaseService {
       )
     ''');
 
-    // Tabela de lembretes (reminders) -- NOVO
+    // Tabela de lembretes (reminders)
     await _connection.execute('''
       CREATE TABLE IF NOT EXISTS reminders (
         id SERIAL PRIMARY KEY,
@@ -91,6 +91,18 @@ class DatabaseService {
         title TEXT NOT NULL,
         day_of_week INTEGER NOT NULL, -- 1=Segunda, 7=Domingo
         time TEXT NOT NULL,          -- Formato HH:MM
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    ''');
+
+    // Tabela para resultados do jogo "Palavra Rápida" -- NOVO
+    await _connection.execute('''
+      CREATE TABLE IF NOT EXISTS quick_word_game_results (
+        id SERIAL PRIMARY KEY,
+        user_id UUID NOT NULL,
+        score INTEGER NOT NULL,
+        correct_words TEXT[] NOT NULL,   -- Array de texto para palavras acertadas
+        incorrect_words TEXT[] NOT NULL, -- Array de texto para palavras erradas
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
     ''');
