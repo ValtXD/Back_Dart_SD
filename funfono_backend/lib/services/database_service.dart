@@ -89,8 +89,8 @@ class DatabaseService {
         id SERIAL PRIMARY KEY,
         user_id UUID NOT NULL,
         title TEXT NOT NULL,
-        day_of_week INTEGER NOT NULL, -- 1=Segunda, 7=Domingo
-        time TEXT NOT NULL,          -- Formato HH:MM
+        day_of_week INTEGER NOT NULL, 
+        time TEXT NOT NULL,          
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
     ''');
@@ -101,8 +101,8 @@ class DatabaseService {
         id SERIAL PRIMARY KEY,
         user_id UUID NOT NULL,
         score INTEGER NOT NULL,
-        correct_words TEXT[] NOT NULL,   -- Array de texto para palavras acertadas
-        incorrect_words TEXT[] NOT NULL, -- Array de texto para palavras erradas
+        correct_words TEXT[] NOT NULL,   
+        incorrect_words TEXT[] NOT NULL, 
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
     ''');
