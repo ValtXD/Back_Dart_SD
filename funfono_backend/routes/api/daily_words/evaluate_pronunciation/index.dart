@@ -13,6 +13,7 @@ Future<Response> onRequest(RequestContext context) async {
 
   load();
   final assemblyAIApiKey = env['ASSEMBLYAI_API_KEY'] ?? '';
+  final geminiApiKey = env['GEMINI_API_KEY'] ?? ''; // NOVO: Chave Gemini para dicas
 
   if (assemblyAIApiKey.isEmpty) {
     print('❌ ERRO: ASSEMBLYAI_API_KEY não configurada no .env para avaliação de pronúncia de palavras diárias.');
@@ -26,18 +27,14 @@ Future<Response> onRequest(RequestContext context) async {
     final body = await context.request.json();
     final String word = body['word'] as String;
     final String userSpeechBase64 = body['user_speech_base64'] as String;
+    // O frontend não envia 'sound', mas podemos inferir ou passar algo genérico se necessário para Gemini
+    // Por enquanto, usaremos a palavra completa para a dica.
 
     print('DEBUG BACKEND (eval_pron): Word: $word');
     print('DEBUG BACKEND (eval_pron): Raw Base64 Length (vindo do Flutter): ${userSpeechBase64.length}');
-    if (userSpeechBase64.isNotEmpty) {
-      print('DEBUG BACKEND (eval_pron): Raw Base64 start: ${userSpeechBase64.substring(0, min(userSpeechBase64.length, 50))}...');
-    } else {
-      print('DEBUG BACKEND (eval_pron): Raw Base64 está vazio.');
-    }
 
-    // CORREÇÃO AQUI: Usando o RegExp EXATO da sua versão funcional (evaluate_minigame.txt)
     final pureBase64 = userSpeechBase64.replaceFirst(
-      RegExp(r'data:audio/\w+;base64,'), // Este regex foi validado no seu outro código
+      RegExp(r'data:audio/\w+;base64,'), // Usando o regex do seu código funcional
       ''
     );
 
@@ -89,6 +86,8 @@ Future<Response> onRequest(RequestContext context) async {
       body: jsonEncode({
         'audio_url': audioUrl,
         'language_code': 'pt',
+        'word_boost': [word],
+        'boost_param': 'high',
       }),
     );
 
@@ -142,16 +141,64 @@ Future<Response> onRequest(RequestContext context) async {
     }
 
     final transcription = transcriptResult['text'] as String? ?? '';
-    final isCorrect = transcription.toLowerCase().contains(word.toLowerCase());
+    bool isCorrect = transcription.toLowerCase().contains(word.toLowerCase());
+    String message; // A mensagem/dica que será retornada
+
+    if (isCorrect) {
+      message = 'Pronúncia correta! Parabéns!';
+    } else {
+      // NOVO: Gerar dica específica com Gemini se a pronúncia estiver incorreta
+      if (geminiApiKey.isEmpty) {
+        message = 'Pronúncia incorreta. (Erro: Chave Gemini não configurada para dicas).';
+      } else {
+        final String geminiPrompt = '''
+Você é um fonoaudiólogo virtual e sua tarefa é dar uma dica de pronúncia curta e prática.
+A palavra correta era "$word".
+A transcrição do usuário foi: "${transcription.isEmpty ? 'não foi possível transcrever' : transcription}".
+
+Com base na provável dificuldade para pronunciar "$word" e considerando a transcrição,
+dê uma dica focada em um som específico da palavra ou na posição da boca/língua/lábios.
+Se a transcrição estiver muito diferente, pode sugerir focar na palavra toda.
+Responda APENAS com a dica. Não use saudação, introdução ou conclusão.
+Exemplo: "Para o som de 's', tente encostar a ponta da língua atrás dos dentes da frente e soprar o ar suavemente."
+''';
+
+        try {
+          final geminiResponse = await http.post(
+            Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$geminiApiKey'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'contents': [
+                {
+                  'parts': [
+                    {'text': geminiPrompt}
+                  ]
+                }
+              ]
+            }),
+          );
+
+          if (geminiResponse.statusCode == 200) {
+            final geminiData = jsonDecode(geminiResponse.body);
+            final geminiText = geminiData['candidates']?[0]?['content']?['parts']?[0]?['text'] ?? 'Não foi possível gerar uma dica específica.';
+            message = geminiText.trim(); // Limpa espaços extras
+          } else {
+            print('❌ ERRO BACKEND (eval_pron): Erro na chamada ao Gemini para dicas: ${geminiResponse.statusCode} - ${geminiResponse.body}');
+            message = 'Pronúncia incorreta. (Não foi possível gerar uma dica específica da IA).';
+          }
+        } catch (geminiError, geminiStack) {
+          print('❌ ERRO BACKEND (eval_pron): Exceção ao chamar Gemini para dicas: $geminiError\n$geminiStack');
+          message = 'Pronúncia incorreta. (Erro interno ao gerar dica).';
+        }
+      }
+    }
     
-    print('DEBUG BACKEND (eval_pron): Resultado final: Palavra: $word, Transcrição: $transcription, Correto: $isCorrect');
+    print('DEBUG BACKEND (eval_pron): Resultado final: Palavra: $word, Transcrição: $transcription, Correto: $isCorrect, Mensagem/Dica: $message');
 
     return Response.json(
       body: {
         'correto': isCorrect,
-        'mensagem': isCorrect
-            ? 'Pronúncia correta!'
-            : 'Pronúncia incorreta. Tente novamente.',
+        'mensagem': message, // Retorna a dica gerada (ou a mensagem de sucesso)
         'transcricao_servico_externo': transcription,
       },
     );
