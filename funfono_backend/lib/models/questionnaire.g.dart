@@ -8,6 +8,7 @@ part of 'questionnaire.dart';
 
 Questionnaire _$QuestionnaireFromJson(Map<String, dynamic> json) =>
     Questionnaire(
+      id: json['id'] as String?,
       userId: json['user_id'] as String,
       age: (json['age'] as num?)?.toInt(),
       gender: json['gender'] as String?,
@@ -39,10 +40,14 @@ Questionnaire _$QuestionnaireFromJson(Map<String, dynamic> json) =>
           ?.map((e) => e as String)
           .toList(),
       practiceFrequency: json['practice_frequency'] as String?,
+      createdAt: json['created_at'] == null
+          ? null
+          : DateTime.parse(json['created_at'] as String),
     );
 
 Map<String, dynamic> _$QuestionnaireToJson(Questionnaire instance) =>
     <String, dynamic>{
+      'id': instance.id,
       'user_id': instance.userId,
       'age': instance.age,
       'gender': instance.gender,
@@ -59,4 +64,5 @@ Map<String, dynamic> _$QuestionnaireToJson(Questionnaire instance) =>
       'preferred_communication': instance.communicationPreference,
       'improvement_goals': instance.appExpectations,
       'practice_frequency': instance.practiceFrequency,
+      'created_at': instance.createdAt?.toIso8601String(),
     };

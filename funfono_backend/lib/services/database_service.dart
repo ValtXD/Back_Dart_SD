@@ -106,6 +106,23 @@ class DatabaseService {
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
     ''');
+
+    // NOVO: Tabela para resultados de "Palavras Diárias"
+    await _connection.execute('''
+      CREATE TABLE IF NOT EXISTS daily_word_attempts (
+        id SERIAL PRIMARY KEY,
+        user_id UUID NOT NULL,
+        word TEXT NOT NULL,
+        user_transcription TEXT, -- Pode ser nulo se não houver transcrição clara
+        is_correct BOOLEAN NOT NULL,
+        tip TEXT, -- Dica da IA
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        CONSTRAINT fk_daily_word_user_id
+            FOREIGN KEY (user_id)
+            REFERENCES users (id)
+            ON DELETE CASCADE
+      );
+    ''');
   }
 
   /// Getter da conexão. Lança erro se ainda não foi inicializado.

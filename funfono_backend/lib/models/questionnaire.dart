@@ -7,6 +7,8 @@ part 'questionnaire.g.dart';
 
 @JsonSerializable()
 class Questionnaire {
+  final String? id; 
+
   @JsonKey(name: 'user_id')
   final String userId; // userId é String e não nulo
 
@@ -52,7 +54,11 @@ class Questionnaire {
   @JsonKey(name: 'practice_frequency')
   final String? practiceFrequency;
 
+   @JsonKey(name: 'created_at')
+  final DateTime? createdAt; 
+
   Questionnaire({
+    this.id,
     required this.userId, // userId é o único campo obrigatório
     this.age,
     this.gender,
@@ -69,6 +75,7 @@ class Questionnaire {
     this.communicationPreference,
     this.appExpectations,
     this.practiceFrequency,
+    this.createdAt,
   });
 
   factory Questionnaire.fromJson(Map<String, dynamic> json) => _$QuestionnaireFromJson(json);

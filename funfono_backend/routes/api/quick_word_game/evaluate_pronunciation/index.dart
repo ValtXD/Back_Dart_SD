@@ -1,4 +1,4 @@
-// routes/api/exercises/quick_word_game/evaluate_pronunciation/index.dart
+// routes/api/quick_word_game/evaluate_pronunciation/index.dart
 
 import 'dart:convert';
 import 'package:dart_frog/dart_frog.dart';
